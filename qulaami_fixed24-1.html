@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deen Ledger UI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    body {
+      background-color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* PRESS DOWN EFFECT FOR ALL BUTTONS, CARDS, TABS, ICONS */
+    button, .tab, .transaction-item, .card-wrapper, .fab, .nav-item, .action-icon-add, .action-icon-pay, .filter-btn, .settings-item, .star-btn, .lang-option {
+      transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    button:active, .tab:active, .transaction-item:active, .card-wrapper:active, .fab:active, .nav-item:active, .action-icon-add:active, .action-icon-pay:active, .filter-btn:active, .settings-item:active, .star-btn:active, .lang-option:active {
+      transform: scale(0.978) !important;
+    }
+
+    /* --- AUTH SCREEN --- */
+    .auth-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #121212;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 24px; z-index: 1000; color: white;
+    }
+
+    .auth-card {
+      background-color: #1e1e1e; width: 100%; max-width: 400px; padding: 30px;
+      border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333;
+    }
+
+    .auth-header { text-align: center; margin-bottom: 25px; }
+    .auth-header i { font-size: 40px; color: #d87d4a; margin-bottom: 10px; }
+    .auth-header h2 { font-size: 22px; margin-bottom: 6px; color: #ffffff; }
+    .auth-header p { font-size: 13px; color: #d87d4a; }
+
+    .auth-form .form-group { margin-bottom: 16px; }
+    .auth-form label { display: block; font-size: 12px; color: #d87d4a; margin-bottom: 6px; font-weight: 600; }
+    .auth-form input {
+      width: 100%; padding: 12px 14px; background-color: #2a2a2a; border: 1px solid #d87d4a; border-radius: 10px; color: white; font-size: 14px; outline: none;
+    }
+
+    .auth-btn {
+      width: 100%; background-color: #d87d4a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    }
+
+    .auth-toggle { text-align: center; margin-top: 20px; font-size: 13px; color: #d87d4a; }
+    .auth-toggle a { color: #f3a97b; text-decoration: none; font-weight: 700; cursor: pointer; }
+
+    /* --- MAIN APP UI --- */
+    .app-container {
+      display: none; flex-direction: column; width: 100%; padding-bottom: 70px;
+    }
+
+    .top-section {
+      background-color: #121212; color: #ffffff; padding: 24px 20px 40px 20px;
+    }
+
+    .app-header { margin-bottom: 20px; }
+    .app-title { font-size: 13px; color: #aaaaaa; margin-bottom: 4px; }
+    .location-selector { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+    .search-bar { display: flex; gap: 12px; max-width: 800px; margin: 0 auto; }
+    .search-input {
+      flex: 1; background-color: #242424; border: none; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; color: #888888; font-size: 14px;
+    }
+    .search-input input { background: transparent; border: none; outline: none; color: #ffffff; width: 100%; font-size: 14px; }
+
+    .filter-btn {
+      background-color: #d87d4a; border: none; border-radius: 12px; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+    }
+
+    .content-section {
+      padding: 0 20px; margin-top: -25px; max-width: 800px; width: 100%; margin-left: auto; margin-right: auto;
+    }
+
+    @property --angle {
+      syntax: '<angle>'; initial-value: 0deg; inherits: false;
+    }
+
+    .card-wrapper {
+      position: relative; border-radius: 20px; padding: 2px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); display: flex; justify-content: center; align-items: center;
+      background: conic-gradient(from var(--angle), #d87d4a 0deg, #7c3a21 120deg, #3a1a0e 240deg, #d87d4a 360deg);
+      animation: rotateAngle 6s linear infinite;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    @keyframes rotateAngle { to { --angle: 360deg; } }
+
+    .total-card {
+      position: relative; background: linear-gradient(135deg, #7c3a21 0%, #3a1a0e 100%); border-radius: 18px; padding: 24px; color: white; width: 100%; height: 100%; z-index: 1; overflow: hidden;
+    }
+
+    .badge-total {
+      background-color: rgba(216, 125, 74, 0.4); color: #fca5a5; padding: 6px 12px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 12px; font-weight: 700; text-transform: uppercase;
+    }
+
+    .total-amount { font-size: 36px; font-weight: 800; margin-bottom: 6px; }
+    .total-label { font-size: 13px; color: #d1d5db; }
+    .card-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); width: 90px; opacity: 0.85; }
+
+    .tabs-nav {
+      display: flex; justify-content: space-between; background-color: #f3f4f6; padding: 5px; border-radius: 14px; margin-bottom: 20px; overflow-x: auto;
+    }
+
+    .tab {
+      flex: 1; padding: 10px 14px; font-size: 13px; font-weight: 600; border-radius: 10px; color: #4b5563; border: none; background: transparent; cursor: pointer; text-align: center; white-space: nowrap;
+    }
+
+    .tab.active { background-color: #d87d4a; color: white; }
+
+    .view-content { display: none; }
+    .view-content.active { display: flex; flex-direction: column; gap: 12px; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+    .empty-state i { font-size: 48px; margin-bottom: 12px; color: #d1d5db; }
+    .empty-state h4 { font-size: 16px; color: #374151; margin-bottom: 4px; }
+    .empty-state p { font-size: 13px; }
+
+    .transaction-item, .settings-item {
+      background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); cursor: pointer;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 14px; }
+    .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    .avatar-purple { background-color: #f3e8ff; color: #6b21a8; }
+    .avatar-gray { background-color: #e5e7eb; color: #374151; }
+    .avatar-red { background-color: #fee2e2; color: #b91c1c; }
+
+    .details .name { font-size: 15px; font-weight: 700; color: #111827; }
+    .details .subtext { font-size: 12px; color: #6b7280; margin: 2px 0; }
+    .details .date { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+
+    .amount-info { text-align: right; }
+    .amount { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+
+    .status-badge {
+      font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-transform: uppercase;
+    }
+    .status-badge.deen { background-color: #fee2e2; color: #b91c1c; }
+    .status-badge.iowe { background-color: #fef3c7; color: #d97706; }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot.deen { background-color: #b91c1c; }
+    .dot.iowe { background-color: #d97706; }
+
+    .star-btn { color: #d1d5db; font-size: 18px; cursor: pointer; padding: 6px; }
+    .star-btn.active { color: #f59e0b; }
+
+    /* PROFILE STYLES */
+    .profile-card { background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 24px; text-align: center; margin-bottom: 20px; }
+    .profile-avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 12px auto; }
+    .profile-avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #6b7280; border: 3px solid #d87d4a; }
+    .upload-btn { position: absolute; bottom: 0; right: 0; background-color: #d87d4a; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; border: 2px solid white; }
+    .profile-name { font-size: 18px; font-weight: 700; color: #111827; }
+    .profile-email { font-size: 13px; color: #6b7280; margin-top: 2px; }
+
+    /* PERSON DETAIL PAGE STYLES */
+    .detail-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 500; display: none; flex-direction: column; padding-bottom: 20px; overflow-y: auto;
+    }
+    .detail-overlay.active { display: flex; }
+
+    .detail-header-bar {
+      background-color: #121212; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .detail-back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    .detail-top-actions { display: flex; gap: 12px; }
+
+    .action-icon-add {
+      background-color: #b91c1c; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
+    }
+
+    .action-icon-pay {
+      background-color: #047857; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
+    }
+
+    .detail-card-center {
+      text-align: center; padding: 25px 20px 20px 20px; background-color: #fafafa; border-bottom: 1px solid #eee; display: flex; flex-direction: column; align-items: center;
+    }
+
+    .detail-profile-circle {
+      width: 70px; height: 70px; border-radius: 50%; background-color: #fffaf7; border: 3px solid #d87d4a; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #d87d4a; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(216, 125, 74, 0.15);
+    }
+
+    .detail-amount-display { font-size: 36px; font-weight: 800; color: #d87d4a; margin-bottom: 4px; }
+    .detail-person-name { font-size: 20px; font-weight: 700; color: #111827; }
+    .detail-divider { height: 1px; background-color: #e5e7eb; margin: 20px 0; }
+    .detail-history-section { padding: 0 20px; }
+    .detail-history-title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 15px; }
+
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #f9fafb; border-radius: 12px; margin-bottom: 10px; border: 1px solid #f3f4f6;
+    }
+    .history-info .hist-person { font-weight: 700; font-size: 14px; color: #111827; margin-bottom: 2px; }
+    .history-info .hist-type { font-weight: 700; font-size: 12px; text-transform: uppercase; }
+    .history-info .hist-date { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .history-amount { font-weight: 700; font-size: 14px; }
+
+    /* FAB & Bottom Nav */
+    .fab {
+      position: fixed; right: 24px; bottom: 80px; background-color: #d87d4a; color: white; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(216, 125, 74, 0.4); cursor: pointer; z-index: 10;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background-color: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 14px 0; border-top: 1px solid #e5e7eb; z-index: 100;
+    }
+    .nav-item { color: #9ca3af; font-size: 20px; cursor: pointer; }
+    .nav-item.active { color: #d87d4a; }
+
+    /* MODALS */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: flex-end; z-index: 600; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+
+    .modal-content {
+      background-color: #ffffff; width: 100%; max-width: 500px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; transform: translateY(100%); transition: transform 0.3s ease; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 18px; color: #111827; }
+    .close-btn { font-size: 20px; color: #9ca3af; cursor: pointer; border: none; background: none; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #d87d4a; }
+
+    .submit-btn {
+      width: 100%; background-color: #d87d4a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-container" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-header">
+        <i class="fa-solid fa-wallet"></i>
+        <h2 id="authTitle" data-i18n="welcome_title">Welcome to Deen Ledger</h2>
+        <p id="authSubtitle" data-i18n="welcome_sub">Please log in to your account to continue</p>
+      </div>
+
+      <form class="auth-form" id="authForm">
+        <div class="form-group" id="nameGroup" style="display: none;">
+          <label data-i18n="lbl_fullname">Full Name</label>
+          <input type="text" id="authName" placeholder="Example: Mohamed Ali">
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="lbl_email">Email or Phone</label>
+          <input type="text" id="authEmail" placeholder="user@mail.com" required>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="lbl_password">Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="auth-btn" id="authSubmitBtn" data-i18n="btn_login">Log In</button>
+      </form>
+
+      <div class="auth-toggle">
+        <span id="authToggleText" data-i18n="no_account">Don't have an account?</span>
+        <a id="authToggleBtn" data-i18n="btn_signup_toggle">Sign Up now</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="app-container" id="appScreen">
+    
+    <!-- Top Section -->
+    <div class="top-section">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="app-header">
+          <div class="app-title">Deen Ledger</div>
+          <div class="location-selector">
+            Mogadishu, Somalia <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
+          </div>
+        </div>
+
+        <div class="search-bar">
+          <div class="search-input">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search person, amount..." data-i18n-ph="ph_search">
+          </div>
+          <button class="filter-btn">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      
+      <!-- TOTAL CARD -->
+      <div class="card-wrapper" id="homeTotalCard">
+        <div class="total-card">
+          <span class="badge-total" id="cardBadgeTitle">Total : Deen</span>
+          <div class="total-amount" id="totalAmountDisplay">$ 0.00</div>
+          <div class="total-label" id="cardDescLabel">Borrowed from others (Tap to switch)</div>
+          <svg class="card-icon" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="20" width="80" height="50" rx="10" fill="#E28654"/>
+            <circle cx="30" cy="30" r="15" fill="#F3A97B"/>
+            <text x="26" y="35" fill="#FFF" font-weight="bold" font-size="14">$</text>
+            <rect x="65" y="35" width="25" height="20" rx="5" fill="#C36838"/>
+            <circle cx="73" cy="45" r="3" fill="#FFF"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 1. HOME VIEW -->
+      <div class="view-content active" id="homeView">
+        <div class="empty-state" id="emptyHome">
+          <i class="fa-solid fa-star"></i>
+          <h4 data-i18n="empty_home_title">No starred people yet</h4>
+          <p data-i18n="empty_home_desc">Go to "People", tap the star icon next to a person to pin them to Home.</p>
+        </div>
+        <div id="starredList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+
+      <!-- 2. PEOPLE / CONTACTS VIEW -->
+      <div class="view-content" id="peopleView">
+        <div class="tabs-nav">
+          <button class="tab active" data-people-tab="all" data-i18n="tab_all">All</button>
+          <button class="tab" data-people-tab="deen" data-i18n="tab_deen">Deen</button>
+          <button class="tab" data-people-tab="iowe" data-i18n="tab_iowe">I Owe</button>
+        </div>
+
+        <div class="empty-state" id="emptyPeople">
+          <i class="fa-solid fa-users"></i>
+          <h4 data-i18n="empty_contacts_title">No contacts found</h4>
+          <p data-i18n="empty_contacts_desc">Tap (+) to add a new person & amount.</p>
+        </div>
+
+        <div id="peopleList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+
+      <!-- 3. ALL TRANSACTIONS VIEW -->
+      <div class="view-content" id="reportsView">
+        <div class="empty-state" id="emptyAllTrans">
+          <i class="fa-solid fa-file-lines"></i>
+          <h4 data-i18n="empty_paid_title">No transactions recorded yet</h4>
+          <p data-i18n="empty_paid_desc">All activity across all people will show up here.</p>
+        </div>
+        <div id="allTransactionsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+
+      <!-- 4. PROFILE VIEW -->
+      <div class="view-content" id="profileView">
+        <div class="profile-card">
+          <div class="profile-avatar-container">
+            <div class="profile-avatar-img" id="profileAvatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <label for="avatarInput" class="upload-btn">
+              <i class="fa-solid fa-camera"></i>
+            </label>
+            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+          </div>
+          <div class="profile-name" id="displayName">User Name</div>
+          <div class="profile-email" id="displayEmail">user@example.com</div>
+        </div>
+
+        <div class="settings-item" id="langSettingBtn">
+          <div class="user-info">
+            <div class="avatar avatar-gray"><i class="fa-solid fa-globe"></i></div>
+            <div class="details">
+              <div class="name" data-i18n="set_language">Language</div>
+              <div class="subtext" id="currentLangDisplay">English</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+
+        <div class="settings-item">
+          <div class="user-info">
+            <div class="avatar avatar-gray"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="details">
+              <div class="name" data-i18n="set_security">Security & PIN Code</div>
+              <div class="subtext" data-i18n="set_security_sub">Lock application</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+
+        <div class="settings-item" id="logoutBtn" style="border-color: #fca5a5;">
+          <div class="user-info">
+            <div class="avatar avatar-red"><i class="fa-solid fa-right-from-bracket"></i></div>
+            <div class="details">
+              <div class="name" style="color: #b91c1c;" data-i18n="btn_logout">Log Out</div>
+              <div class="subtext" data-i18n="set_logout_sub">Sign out of your account</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow" style="color: #b91c1c;"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAB -->
+    <div class="fab" id="openModalBtn">
+      <i class="fa-solid fa-plus"></i>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active" id="navHome" title="Home"><i class="fa-solid fa-house"></i></div>
+      <div class="nav-item" id="navPeople" title="People"><i class="fa-solid fa-users"></i></div>
+      <div class="nav-item" id="navDocs" title="All Transactions"><i class="fa-regular fa-file-lines"></i></div>
+      <div class="nav-item" id="navProfile" title="Profile"><i class="fa-regular fa-user"></i></div>
+    </div>
+
+  </div>
+
+  <!-- PERSON DETAIL OVERLAY PAGE -->
+  <div class="detail-overlay" id="personDetailOverlay">
+    <div class="detail-header-bar">
+      <button class="detail-back-btn" id="closeDetailBtn"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="detail-top-actions">
+        <button class="action-icon-add" id="btnDetailAdd" title="Take Debt / Add (+)"><i class="fa-solid fa-plus"></i></button>
+        <button class="action-icon-pay" id="btnDetailPay" title="Pay Debt (Wallet)"><i class="fa-solid fa-wallet"></i></button>
+      </div>
+    </div>
+
+    <div class="detail-card-center">
+      <div class="detail-profile-circle">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="detail-amount-display" id="detailTotalAmount">$ 0.00</div>
+      <div class="detail-person-name" id="detailPersonName">Person Name</div>
+    </div>
+
+    <div class="detail-history-section">
+      <div class="detail-divider"></div>
+      <div class="detail-history-title" data-i18n="history_title">Transaction History</div>
+      <div id="detailHistoryList"></div>
+    </div>
+  </div>
+
+  <!-- MAIN ADD TRANSACTION MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="modal_add_title">Add New Person / Debt</h3>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="addTransactionForm">
+        <div class="form-group">
+          <label for="personName" data-i18n="lbl_person_name">Person Name</label>
+          <input type="text" id="personName" placeholder="Example: Ali Mohamed" required>
+        </div>
+        <div class="form-group">
+          <label for="transactionType" data-i18n="lbl_trans_type">Type</label>
+          <select id="transactionType" required>
+            <option value="deen">DEEN (Red - Borrowed from them)</option>
+            <option value="iowe">I OWE (Yellow - They borrowed from me)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="amount" data-i18n="lbl_amount">Amount ($)</label>
+          <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+        </div>
+        <button type="submit" class="submit-btn" data-i18n="btn_save">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- QUICK ACTION MODAL -->
+  <div class="modal-overlay" id="quickModalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="quickModalTitle">Add Amount</h3>
+        <button class="close-btn" id="closeQuickModalBtn">&times;</button>
+      </div>
+      <form id="quickActionForm">
+        <div class="form-group">
+          <label for="quickAmount" data-i18n="lbl_amount">Amount ($)</label>
+          <input type="number" id="quickAmount" placeholder="0.00" step="0.01" required>
+        </div>
+        <button type="submit" class="submit-btn" id="quickSubmitBtn" data-i18n="btn_save">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LANGUAGE MODAL -->
+  <div class="modal-overlay" id="langModalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="set_language">Select Language</h3>
+        <button class="close-btn" id="closeLangModalBtn">&times;</button>
+      </div>
+      <div class="lang-option" id="optSomali">
+        <span>Soomaali (Somali)</span>
+        <i class="fa-solid fa-check" style="display:none;"></i>
+      </div>
+      <div class="lang-option selected" id="optEnglish">
+        <span>English</span>
+        <i class="fa-solid fa-check"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const translations = {
+      en: {
+        welcome_title: "Welcome to Deen Ledger",
+        welcome_sub: "Please log in to your account to continue",
+        signup_title: "Create New Account",
+        signup_sub: "Join Deen Ledger today",
+        lbl_fullname: "Full Name",
+        lbl_email: "Email or Phone",
+        lbl_password: "Password",
+        btn_login: "Log In",
+        btn_signup: "Sign Up",
+        no_account: "Don't have an account?",
+        have_account: "Already have an account?",
+        btn_signup_toggle: "Sign Up now",
+        btn_login_toggle: "Log In here",
+        ph_search: "Search person, amount...",
+        tab_all: "All",
+        tab_deen: "Deen",
+        tab_iowe: "I Owe",
+        empty_home_title: "No starred people yet",
+        empty_home_desc: "Go to 'People', tap the star icon next to a person to pin them to Home.",
+        empty_contacts_title: "No contacts found",
+        empty_contacts_desc: "Tap (+) to add a new person & amount.",
+        empty_paid_title: "No transactions recorded yet",
+        empty_paid_desc: "All activity across all people will show up here.",
+        set_language: "Language",
+        set_security: "Security & PIN Code",
+        set_security_sub: "Lock application",
+        btn_logout: "Log Out",
+        set_logout_sub: "Sign out of your account",
+        modal_add_title: "Add New Person / Debt",
+        lbl_person_name: "Person Name",
+        lbl_trans_type: "Type",
+        lbl_amount: "Amount ($)",
+        btn_save: "Save",
+        history_title: "Transaction History"
+      },
+      so: {
+        welcome_title: "Kusoo Dhowaw Deen Ledger",
+        welcome_sub: "Fadlan gal akowntigaaga si aad u sii wadato",
+        signup_title: "Samayso Akaunti Cusub",
+        signup_sub: "Kusoo biir Deen Ledger maanta",
+        lbl_fullname: "Magacaaaga Buuxa",
+        lbl_email: "Email ama Taleefan",
+        lbl_password: "Password (Furaha)",
+        btn_login: "Log In",
+        btn_signup: "Sign Up",
+        no_account: "Akaunti ma leehid?",
+        have_account: "Akaunti waad leedahay?",
+        btn_signup_toggle: "Sign Up samayso",
+        btn_login_toggle: "Log In gal",
+        ph_search: "Search person, amount...",
+        tab_all: "All",
+        tab_deen: "Deen",
+        tab_iowe: "I Owe",
+        empty_home_title: "Macaamiil xiddig leh ma jiraan",
+        empty_home_desc: "Aad Tab-ka 'People', taabo xiddigta qofka si uu ugu soo muuqdo Home-ka.",
+        empty_contacts_title: "Macaamiil ma jiraan",
+        empty_contacts_desc: "Taabo (+) si aad macmiil & lacag cusub u kordhiso.",
+        empty_paid_title: "Warbixin maamul ma jirto",
+        empty_paid_desc: "Dhamaan dhaqdhaqaaqa lacagaha halkan ayay ku soo bixi doonaan.",
+        set_language: "Luuqadda (Language)",
+        set_security: "Amniga & PIN Code",
+        set_security_sub: "Xidhida App-ka",
+        btn_logout: "Log Out",
+        set_logout_sub: "Ka bax akowntiga",
+        modal_add_title: "Kudhar Person / Deen Cusub",
+        lbl_person_name: "Magaca Qofka",
+        lbl_trans_type: "Nooca",
+        lbl_amount: "Qaddarka ($)",
+        btn_save: "Kaydi",
+        history_title: "Taariikhda Lacagaha (History)"
+      }
+    };
+
+    let currentLang = 'en';
+    let peopleData = [];
+    let activePersonId = null;
+    let quickActionType = 'add';
+    let cardState = 'deen';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+      });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (translations[lang][key]) el.placeholder = translations[lang][key];
+      });
+      document.getElementById('currentLangDisplay').textContent = lang === 'so' ? 'Soomaali' : 'English';
+    }
+
+    // AUTH LOGIC
+    const authScreen = document.getElementById('authScreen');
+    const appScreen = document.getElementById('appScreen');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const nameGroup = document.getElementById('nameGroup');
+    const authToggleBtn = document.getElementById('authToggleBtn');
+    const authToggleText = document.getElementById('authToggleText');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const displayName = document.getElementById('displayName');
+    const displayEmail = document.getElementById('displayEmail');
+
+    let isSignUp = false;
+
+    authToggleBtn.addEventListener('click', () => {
+      isSignUp = !isSignUp;
+      if (isSignUp) {
+        authTitle.textContent = translations[currentLang].signup_title;
+        authSubtitle.textContent = translations[currentLang].signup_sub;
+        authSubmitBtn.textContent = translations[currentLang].btn_signup;
+        nameGroup.style.display = "block";
+        authToggleText.textContent = translations[currentLang].have_account;
+        authToggleBtn.textContent = translations[currentLang].btn_login_toggle;
+      } else {
+        authTitle.textContent = translations[currentLang].welcome_title;
+        authSubtitle.textContent = translations[currentLang].welcome_sub;
+        authSubmitBtn.textContent = translations[currentLang].btn_login;
+        nameGroup.style.display = "none";
+        authToggleText.textContent = translations[currentLang].no_account;
+        authToggleBtn.textContent = translations[currentLang].btn_signup_toggle;
+      }
+    });
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const emailVal = document.getElementById('authEmail').value;
+      const nameVal = document.getElementById('authName').value || 'User';
+
+      displayName.textContent = isSignUp ? nameVal : 'User Account';
+      displayEmail.textContent = emailVal;
+
+      authScreen.style.display = 'none';
+      appScreen.style.display = 'flex';
+      activateNav('home');
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      appScreen.style.display = 'none';
+      authScreen.style.display = 'flex';
+    });
+
+    // Profile Avatar Upload
+    const avatarInput = document.getElementById('avatarInput');
+    const profileAvatar = document.getElementById('profileAvatar');
+
+    avatarInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          profileAvatar.innerHTML = `<img src="${evt.target.result}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Language Modal
+    const langSettingBtn = document.getElementById('langSettingBtn');
+    const langModalOverlay = document.getElementById('langModalOverlay');
+    const closeLangModalBtn = document.getElementById('closeLangModalBtn');
+    const optSomali = document.getElementById('optSomali');
+    const optEnglish = document.getElementById('optEnglish');
+
+    langSettingBtn.addEventListener('click', () => langModalOverlay.classList.add('active'));
+    closeLangModalBtn.addEventListener('click', () => langModalOverlay.classList.remove('active'));
+
+    optSomali.addEventListener('click', () => {
+      optSomali.classList.add('selected');
+      optSomali.querySelector('.fa-check').style.display = 'inline-block';
+      optEnglish.classList.remove('selected');
+      optEnglish.querySelector('.fa-check').style.display = 'none';
+      setLanguage('so');
+      langModalOverlay.classList.remove('active');
+    });
+
+    optEnglish.addEventListener('click', () => {
+      optEnglish.classList.add('selected');
+      optEnglish.querySelector('.fa-check').style.display = 'inline-block';
+      optSomali.classList.remove('selected');
+      optSomali.querySelector('.fa-check').style.display = 'none';
+      setLanguage('en');
+      langModalOverlay.classList.remove('active');
+    });
+
+    // Navigation & Views
+    const homeTotalCard = document.getElementById('homeTotalCard');
+    const homeView = document.getElementById('homeView');
+    const peopleView = document.getElementById('peopleView');
+    const reportsView = document.getElementById('reportsView');
+    const profileView = document.getElementById('profileView');
+
+    const navHome = document.getElementById('navHome');
+    const navPeople = document.getElementById('navPeople');
+    const navDocs = document.getElementById('navDocs');
+    const navProfile = document.getElementById('navProfile');
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+
+    function hideAllViews() {
+      homeView.classList.remove('active');
+      peopleView.classList.remove('active');
+      reportsView.classList.remove('active');
+      profileView.classList.remove('active');
+    }
+
+    function activateNav(viewName) {
+      navItems.forEach(n => n.classList.remove('active'));
+      hideAllViews();
+
+      if (viewName === 'home') {
+        homeTotalCard.style.display = 'flex';
+        homeView.classList.add('active');
+        navHome.classList.add('active');
+        renderHomeView();
+        updateTotals();
+      } else {
+        homeTotalCard.style.display = 'none';
+        if (viewName === 'people') {
+          peopleView.classList.add('active');
+          navPeople.classList.add('active');
+          renderPeopleView('all');
+        } else if (viewName === 'reports') {
+          reportsView.classList.add('active');
+          navDocs.classList.add('active');
+          renderAllTransactionsView();
+        } else if (viewName === 'profile') {
+          profileView.classList.add('active');
+          navProfile.classList.add('active');
+        }
+      }
+    }
+
+    navHome.addEventListener('click', () => activateNav('home'));
+    navPeople.addEventListener('click', () => activateNav('people'));
+    navDocs.addEventListener('click', () => activateNav('reports'));
+    navProfile.addEventListener('click', () => activateNav('profile'));
+
+    // TOTAL CARD TOGGLE
+    const cardBadgeTitle = document.getElementById('cardBadgeTitle');
+    const totalAmountDisplay = document.getElementById('totalAmountDisplay');
+    const cardDescLabel = document.getElementById('cardDescLabel');
+
+    homeTotalCard.addEventListener('click', () => {
+      cardState = cardState === 'deen' ? 'iowe' : 'deen';
+      updateTotals();
+    });
+
+    function updateTotals() {
+      let totalDeen = 0;
+      let totalIOwe = 0;
+
+      peopleData.forEach(p => {
+        const amt = parseFloat(p.amount) || 0;
+        if (p.type === 'deen') {
+          totalDeen += amt;
+        } else if (p.type === 'iowe') {
+          totalIOwe += amt;
+        }
+      });
+
+      if (cardState === 'deen') {
+        cardBadgeTitle.textContent = "Total : Deen";
+        totalAmountDisplay.textContent = `$ ${totalDeen.toFixed(2)}`;
+        cardDescLabel.textContent = "Borrowed from others (Tap to switch)";
+      } else {
+        cardBadgeTitle.textContent = "Total : I Owe";
+        totalAmountDisplay.textContent = `$ ${totalIOwe.toFixed(2)}`;
+        cardDescLabel.textContent = "Total owed to you by others (Tap to switch)";
+      }
+    }
+
+    const peopleTabs = document.querySelectorAll('[data-people-tab]');
+    peopleTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        peopleTabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderPeopleView(btn.dataset.peopleTab);
+      });
+    });
+
+    function renderPeopleView(filterType = 'all') {
+      const peopleList = document.getElementById('peopleList');
+      const emptyPeople = document.getElementById('emptyPeople');
+      peopleList.innerHTML = '';
+
+      const filtered = peopleData.filter(p => filterType === 'all' || p.type === filterType);
+
+      if (filtered.length === 0) {
+        emptyPeople.style.display = 'block';
+      } else {
+        emptyPeople.style.display = 'none';
+        filtered.forEach(p => {
+          const item = createPeopleCard(p);
+          peopleList.appendChild(item);
+        });
+      }
+    }
+
+    function renderHomeView() {
+      const starredList = document.getElementById('starredList');
+      const emptyHome = document.getElementById('emptyHome');
+      starredList.innerHTML = '';
+
+      const starred = peopleData.filter(p => p.isStarred);
+
+      if (starred.length === 0) {
+        emptyHome.style.display = 'block';
+      } else {
+        emptyHome.style.display = 'none';
+        starred.forEach(p => {
+          const item = createPeopleCard(p);
+          starredList.appendChild(item);
+        });
+      }
+    }
+
+    // TAB 3: ALL TRANSACTIONS (DYNAMIC COLORS: DEEMIYAY = YELLOW, CAGAAR = PAID, GUDUUD = DEEN BORROWED)
+    function renderAllTransactionsView() {
+      const allTransactionsList = document.getElementById('allTransactionsList');
+      const emptyAllTrans = document.getElementById('emptyAllTrans');
+      allTransactionsList.innerHTML = '';
+
+      let allHistory = [];
+      peopleData.forEach(p => {
+        if (p.history) {
+          p.history.forEach(h => {
+            allHistory.push({
+              personName: p.name,
+              personType: p.type,
+              action: h.action,
+              amount: h.amount,
+              dateTime: h.dateTime
+            });
+          });
+        }
+      });
+
+      if (allHistory.length === 0) {
+        emptyAllTrans.style.display = 'block';
+      } else {
+        emptyAllTrans.style.display = 'none';
+        allHistory.forEach(h => {
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          
+          const isDeen = h.personType === 'deen';
+          const isAdd = h.action === 'add';
+
+          let titleText = "";
+          let color = "";
+          let prefix = "";
+
+          if (isAdd) {
+            if (isDeen) {
+              color = "#b91c1c"; // Guduud: Deen cusub la soo qaatay
+              titleText = "DEEN ADDED (+)";
+              prefix = "+";
+            } else {
+              color = "#d97706"; // Jaallo: Lacag la deemiyay (I Owe Added)
+              titleText = "I OWE ADDED (+)";
+              prefix = "+";
+            }
+          } else {
+            color = "#047857"; // Cagaar: Lacag la bixiyay ama la helay
+            titleText = isDeen ? "DEEN SETTLED (-)" : "I OWE RECEIVED (-)";
+            prefix = "-";
+          }
+
+          item.innerHTML = `
+            <div class="history-info">
+              <div class="hist-person">${h.personName}</div>
+              <div class="hist-type" style="color: ${color};">${titleText}</div>
+              <div class="hist-date"><i class="fa-regular fa-clock"></i> ${h.dateTime}</div>
+            </div>
+            <div class="history-amount" style="color: ${color};">${prefix}$ ${h.amount}</div>
+          `;
+          allTransactionsList.appendChild(item);
+        });
+      }
+    }
+
+    function createPeopleCard(p) {
+      const isDeen = p.type === 'deen';
+      const badgeClass = isDeen ? 'deen' : 'iowe';
+      const badgeText = isDeen ? 'DEEN' : 'I OWE';
+      const subText = isDeen ? 'You borrowed from them' : 'They borrowed from you';
+
+      const card = document.createElement('div');
+      card.className = 'transaction-item';
+      card.innerHTML = `
+        <div class="user-info">
+          <i class="fa-solid fa-star star-btn ${p.isStarred ? 'active' : ''}"></i>
+          <div class="avatar avatar-purple"><i class="fa-solid fa-user"></i></div>
+          <div class="details">
+            <div class="name">${p.name}</div>
+            <div class="subtext">${subText}</div>
+            <div class="date"><i class="fa-regular fa-calendar"></i> ${p.date}</div>
+          </div>
+        </div>
+        <div class="amount-info">
+          <div class="amount" style="color: ${isDeen ? '#b91c1c' : '#d97706'};">$ ${p.amount}</div>
+          <span class="status-badge ${badgeClass}"><span class="dot ${badgeClass}"></span> ${badgeText}</span>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('star-btn')) {
+          p.isStarred = !p.isStarred;
+          renderPeopleView();
+          renderHomeView();
+          return;
+        }
+        openPersonDetail(p);
+      });
+
+      return card;
+    }
+
+    // PERSON DETAIL PAGE LOGIC
+    const personDetailOverlay = document.getElementById('personDetailOverlay');
+    const closeDetailBtn = document.getElementById('closeDetailBtn');
+    const detailTotalAmount = document.getElementById('detailTotalAmount');
+    const detailPersonName = document.getElementById('detailPersonName');
+    const detailHistoryList = document.getElementById('detailHistoryList');
+    const btnDetailAdd = document.getElementById('btnDetailAdd');
+    const btnDetailPay = document.getElementById('btnDetailPay');
+
+    function openPersonDetail(p) {
+      activePersonId = p.id;
+      detailPersonName.textContent = p.name;
+      detailTotalAmount.textContent = `$ ${parseFloat(p.amount).toFixed(2)}`;
+      renderHistory(p);
+      personDetailOverlay.classList.add('active');
+    }
+
+    function renderHistory(p) {
+      detailHistoryList.innerHTML = '';
+      if (!p.history || p.history.length === 0) {
+        detailHistoryList.innerHTML = `<div style="text-align:center; color:#9ca3af; font-size:13px; padding:20px;">No history recorded yet.</div>`;
+        return;
+      }
+
+      const isDeen = p.type === 'deen';
+
+      p.history.forEach(h => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const isAdd = h.action === 'add';
+
+        let titleText = "";
+        let color = "";
+        let prefix = "";
+
+        if (isAdd) {
+          if (isDeen) {
+            color = "#b91c1c"; // Guduud
+            titleText = "DEEN ADDED (+)";
+            prefix = "+";
+          } else {
+            color = "#d97706"; // Jaallo
+            titleText = "I OWE ADDED (+)";
+            prefix = "+";
+          }
+        } else {
+          color = "#047857"; // Cagaar
+          titleText = isDeen ? "DEEN SETTLED (-)" : "I OWE RECEIVED (-)";
+          prefix = "-";
+        }
+
+        item.innerHTML = `
+          <div class="history-info">
+            <div class="hist-type" style="color: ${color};">${titleText}</div>
+            <div class="hist-date"><i class="fa-regular fa-clock"></i> ${h.dateTime}</div>
+          </div>
+          <div class="history-amount" style="color: ${color};">${prefix}$ ${h.amount}</div>
+        `;
+        detailHistoryList.appendChild(item);
+      });
+    }
+
+    closeDetailBtn.addEventListener('click', () => personDetailOverlay.classList.remove('active'));
+
+    // QUICK ACTION MODAL
+    const quickModalOverlay = document.getElementById('quickModalOverlay');
+    const closeQuickModalBtn = document.getElementById('closeQuickModalBtn');
+    const quickModalTitle = document.getElementById('quickModalTitle');
+    const quickSubmitBtn = document.getElementById('quickSubmitBtn');
+    const quickActionForm = document.getElementById('quickActionForm');
+
+    btnDetailAdd.addEventListener('click', () => {
+      quickActionType = 'add';
+      quickModalTitle.textContent = "Add Amount (+)";
+      const p = peopleData.find(x => x.id === activePersonId);
+      quickSubmitBtn.style.backgroundColor = (p && p.type === 'iowe') ? "#d97706" : "#b91c1c";
+      quickModalOverlay.classList.add('active');
+    });
+
+    btnDetailPay.addEventListener('click', () => {
+      quickActionType = 'pay';
+      quickModalTitle.textContent = "Settle / Pay Amount (-)";
+      quickSubmitBtn.style.backgroundColor = "#047857";
+      quickModalOverlay.classList.add('active');
+    });
+
+    closeQuickModalBtn.addEventListener('click', () => quickModalOverlay.classList.remove('active'));
+
+    quickActionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const numAmount = parseFloat(document.getElementById('quickAmount').value);
+      const amountStr = numAmount.toFixed(2);
+
+      const p = peopleData.find(x => x.id === activePersonId);
+      if (p) {
+        let currentAmt = parseFloat(p.amount);
+        if (quickActionType === 'add') {
+          currentAmt += numAmount;
+        } else {
+          currentAmt -= numAmount;
+          if (currentAmt < 0) currentAmt = 0;
+        }
+
+        p.amount = currentAmt.toFixed(2);
+
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        p.history.unshift({
+          action: quickActionType,
+          amount: amountStr,
+          dateTime: `${dateStr} - ${timeStr}`
+        });
+
+        detailTotalAmount.textContent = `$ ${p.amount}`;
+        renderHistory(p);
+        renderPeopleView();
+        renderHomeView();
+        updateTotals();
+      }
+
+      quickActionForm.reset();
+      quickModalOverlay.classList.remove('active');
+    });
+
+    // MAIN ADD FORM
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const addTransactionForm = document.getElementById('addTransactionForm');
+
+    openModalBtn.addEventListener('click', () => modalOverlay.classList.add('active'));
+    closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+
+    addTransactionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('personName').value;
+      const type = document.getElementById('transactionType').value;
+      const numAmount = parseFloat(document.getElementById('amount').value);
+      const amountStr = numAmount.toFixed(2);
+
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const fullDateTime = `${dateStr} - ${timeStr}`;
+
+      let existingPerson = peopleData.find(p => p.name.toLowerCase() === name.toLowerCase());
+
+      if (existingPerson) {
+        existingPerson.type = type;
+        existingPerson.amount = (parseFloat(existingPerson.amount) + numAmount).toFixed(2);
+        existingPerson.history.unshift({
+          action: 'add',
+          amount: amountStr,
+          dateTime: fullDateTime
+        });
+      } else {
+        const newPerson = {
+          id: Date.now(),
+          name: name,
+          type: type,
+          amount: amountStr,
+          date: dateStr,
+          isStarred: false,
+          history: [{
+            action: 'add',
+            amount: amountStr,
+            dateTime: fullDateTime
+          }]
+        };
+        peopleData.push(newPerson);
+      }
+
+      updateTotals();
+      activateNav('people');
+      addTransactionForm.reset();
+      modalOverlay.classList.remove('active');
+    });
+
+    setLanguage('en');
+  </script>
+</body>
+</html>
